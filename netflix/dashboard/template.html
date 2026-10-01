@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Netflix Dashboard</title>
+<style>
+:root{--bg:#000;--panel:#050505;--head:#141414;--red:#d00000;--w:#fff;--mut:#a0a0a0;--grid:#2b2b2b;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#000}}
+:root[data-theme="dark"]{--bg:#000}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--w);font-family:Georgia,"Times New Roman",serif}
+header{background:var(--head);display:flex;flex-wrap:wrap;align-items:center;gap:16px;padding:14px 20px}
+.logo{font:900 38px/1 "Arial Narrow",Impact,Arial,sans-serif;color:var(--red);letter-spacing:1px;transform:scaleX(.85);transform-origin:left}
+h1{margin:0;font-size:28px;color:var(--red);flex:1;min-width:220px}
+.f{background:#000;padding:8px 14px 12px;min-width:170px;flex:1;max-width:260px}
+.f label{display:block;text-align:center;color:var(--red);font-weight:700;font-size:18px;margin-bottom:6px}
+.f select,.f input{width:100%;background:#000;color:var(--red);border:1px solid #bbb;padding:5px 8px;font:14px Georgia,serif}
+.grid{display:grid;grid-template-columns:190px 1fr 1fr;gap:8px;padding:8px}
+.kpis{grid-row:1/3;display:flex;flex-direction:column;gap:8px}
+.card,.panel{background:var(--panel);padding:10px 12px}
+.card{flex:1;text-align:center;display:flex;flex-direction:column;justify-content:center}
+.card b,.panel h2{color:var(--red);font-size:22px}
+.card span{color:var(--red);font-size:56px;line-height:1.1}
+.panel{border-left:3px solid var(--red);min-height:270px}
+.panel h2{margin:0 0 4px;text-align:center}
+.panel svg{width:100%;height:auto;display:block}
+#donut svg{max-height:300px}
+.lg{display:flex;gap:14px;justify-content:center;font-size:13px}
+.lg i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px}
+text{font-family:Georgia,serif}
+@media (max-width:900px){.grid{grid-template-columns:1fr}.kpis{grid-row:auto;display:grid;grid-template-columns:1fr 1fr}.card span{font-size:42px}}
+</style></head><body>
+<header><div class="logo">NETFLIX</div><h1>NETFLIX DASHBOARD</h1>
+<div class="f"><label for="q">Title</label><input id="q" placeholder="Search a title"></div>
+<div class="f"><label for="g">Genres</label><select id="g"></select></div>
+<div class="f"><label for="y">Release year</label><select id="y"></select></div></header>
+<div class="grid">
+<div class="kpis"><div class="card"><b>Avg Runtime (min)</b><span id="k1"></span></div><div class="card"><b>Movies</b><span id="k2"></span></div><div class="card"><b>TV Shows</b><span id="k3"></span></div><div class="card"><b>Countries</b><span id="k4"></span></div></div>
+<div class="panel"><h2>Movies and TV Shows</h2><div id="donut"></div></div>
+<div class="panel"><h2>Titles by Country</h2><div id="map"></div></div>
+<div class="panel"><h2>Top 5 Genres</h2><div class="lg"><span><i style="background:#d00000"></i>Movies</span><span><i style="background:#fff"></i>TV Shows</span></div><div id="genres"></div></div>
+<div class="panel"><h2>Content By Year (2010 onwards)</h2><div class="lg"><span><i style="background:#d00000"></i>Movies</span><span><i style="background:#fff"></i>TV Shows</span></div><div id="years"></div></div>
+</div>
+<script>
+const D=__DATA__;
+const LL=__LATLON__;
+const $=i=>document.getElementById(i);
+let q="",gi="",yr="";
+$("g").innerHTML='<option value="">All</option>'+D.g.map((n,i)=>`<option value="${i}">${n}</option>`).join("");
+$("y").innerHTML='<option value="">All</option>'+Array.from({length:12},(_,i)=>2021-i).map(y=>`<option>${y}</option>`).join("");
+$("q").oninput=e=>{q=e.target.value.toLowerCase();render()};
+$("g").onchange=e=>{gi=e.target.value;render()};
+$("y").onchange=e=>{yr=e.target.value;render()};
+const RED="#d00000",W="#fff";
+function donut(m,t){const tot=m+t;if(!tot)return'<svg viewBox="0 0 300 220"><text x="150" y="110" fill="#999" text-anchor="middle">No titles match</text></svg>';
+const C=2*Math.PI*70,p=m/tot;
+const lab=(a,v)=>{const x=150+112*Math.cos(a),y=114+112*Math.sin(a);return`<text x="${x}" y="${y}" fill="#fff" font-weight="700" font-size="14" text-anchor="${Math.cos(a)>0?"start":"end"}">${(v*100).toFixed(2)}%</text>`};
+let s='<svg viewBox="0 0 300 220"><g transform="translate(150,110) rotate(-90)"><circle r="70" fill="none" stroke="#fff" stroke-width="36"/>';
+if(p>0)s+=`<circle r="70" fill="none" stroke="${RED}" stroke-width="36" stroke-dasharray="${p*C} ${C}"/>`;
+s+="</g>";
+if(m)s+=lab(-Math.PI/2+p*Math.PI,p);
+if(t)s+=lab(-Math.PI/2+p*2*Math.PI+(1-p)*Math.PI,1-p);
+return s+"</svg>"}
+function genres(rows){const c={};rows.forEach(r=>r[4].forEach(g=>{(c[g]=c[g]||[0,0])[r[1]]++}));
+const top=Object.entries(c).sort((a,b)=>b[1][0]+b[1][1]-a[1][0]-a[1][1]).slice(0,5);
+if(!top.length)return'<svg viewBox="0 0 420 100"><text x="210" y="50" fill="#999" text-anchor="middle">No titles match</text></svg>';
+const mx=Math.max(...top.map(([,v])=>v[0]+v[1])),sc=250/mx;
+let s=`<svg viewBox="0 0 420 ${top.length*34+10}">`;
+top.forEach(([g,v],i)=>{const y=6+i*34,w1=v[0]*sc,w2=v[1]*sc;
+s+=`<text x="136" y="${y+19}" fill="#fff" font-size="12" text-anchor="end">${D.g[g]}</text><rect x="144" y="${y}" width="${w1}" height="26" fill="${RED}"/><rect x="${144+w1}" y="${y}" width="${w2}" height="26" fill="#fff"/>`;
+if(v[0])s+=`<text x="${144+w1/2}" y="${y+18}" fill="#fff" font-size="12" text-anchor="middle">${v[0]}</text>`;
+if(v[1])s+=`<text x="${144+w1+w2/2}" y="${y+18}" fill="#000" font-size="12" text-anchor="middle">${v[1]}</text>`});
+return s+"</svg>"}
+function map(rows){const c={};rows.forEach(r=>r[5].forEach(k=>c[k]=(c[k]||0)+1));
+let s='<svg viewBox="0 0 720 340" style="background:#202020">';
+for(let lo=-150;lo<=150;lo+=30){const x=(lo+180)*2;s+=`<line x1="${x}" x2="${x}" y1="0" y2="340" stroke="#2c2c2c"/>`}
+for(let la=-60;la<=75;la+=15){const y=(90-la)*2-10;s+=`<line y1="${y}" y2="${y}" x1="0" x2="720" stroke="#2c2c2c"/>`}
+[["NORTH AMERICA",-100,52],["SOUTH AMERICA",-60,-22],["EUROPE",15,58],["AFRICA",20,5],["ASIA",90,55],["OCEANIA",135,-38]].forEach(([n,lo,la])=>s+=`<text x="${(lo+180)*2}" y="${(90-la)*2-10}" fill="#555" font-size="13" text-anchor="middle">${n}</text>`);
+Object.entries(c).forEach(([k,n])=>{const p=LL[D.c[k]];if(!p)return;s+=`<circle cx="${(p[1]+180)*2}" cy="${(90-p[0])*2-10}" r="${Math.min(30,3+Math.sqrt(n)*.95)}" fill="${RED}" fill-opacity=".65" stroke="#ff4040" stroke-opacity=".5"><title>${D.c[k]}: ${n}</title></circle>`});
+return s+"</svg>"}
+function years(rows){const Y=[];for(let y=2010;y<=2021;y++)Y.push(y);
+const m=Y.map(y=>rows.filter(r=>r[2]===y&&!r[1]).length),t=Y.map(y=>rows.filter(r=>r[2]===y&&r[1]).length);
+const mx=Math.max(10,...m,...t),X=i=>40+i*(540/(Y.length-1)),H=v=>220-v/mx*180;
+const area=(a,f,st)=>{const p=a.map((v,i)=>`${X(i)},${H(v)}`).join(" ");return`<polygon points="${X(0)},220 ${p} ${X(a.length-1)},220" fill="${f}" fill-opacity=".35"/><polyline points="${p}" fill="none" stroke="${st}" stroke-width="3"/>`};
+let s='<svg viewBox="0 0 600 250"><line x1="40" x2="580" y1="220" y2="220" stroke="#444"/>';
+s+=area(m,RED,RED)+area(t,W,W);
+Y.forEach((y,i)=>{s+=`<text x="${X(i)}" y="240" fill="#bbb" font-size="11" text-anchor="middle">${y}</text><text x="${X(i)}" y="${H(m[i])-6}" fill="#fff" font-size="11" text-anchor="middle">${m[i]}</text>`;if(t[i])s+=`<text x="${X(i)}" y="${H(t[i])+14}" fill="#fff" font-size="11" text-anchor="middle">${t[i]}</text>`});
+return s+"</svg>"}
+function render(){
+const rows=D.t.filter(r=>(!q||r[0].toLowerCase().includes(q))&&(gi===""||r[4].includes(+gi))&&(yr===""||r[2]===+yr));
+const mv=rows.filter(r=>!r[1]),tv=rows.length-mv.length,cs=new Set();rows.forEach(r=>r[5].forEach(k=>cs.add(k)));
+const rt=mv.filter(r=>r[3]);
+$("k1").textContent=rt.length?Math.round(rt.reduce((a,r)=>a+r[3],0)/rt.length):"–";
+$("k2").textContent=mv.length.toLocaleString();$("k3").textContent=tv.toLocaleString();$("k4").textContent=cs.size;
+$("donut").innerHTML=donut(mv.length,tv);$("genres").innerHTML=genres(rows);$("map").innerHTML=map(rows);$("years").innerHTML=years(rows)}
+render();
+</script></body></html>

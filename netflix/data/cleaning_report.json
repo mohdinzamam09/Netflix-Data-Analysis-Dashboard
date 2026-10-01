@@ -1,0 +1,28 @@
+{
+  "raw_rows": 7787,
+  "missing_before": {
+    "show_id": 0,
+    "type": 0,
+    "title": 0,
+    "director": 2389,
+    "cast": 718,
+    "country": 507,
+    "date_added": 10,
+    "release_year": 0,
+    "rating": 7,
+    "duration": 0,
+    "listed_in": 0,
+    "description": 0
+  },
+  "exact_duplicates": 0,
+  "title_dupes": 0,
+  "date_added_missing": 10,
+  "clean_rows": 7787,
+  "missing_after": {
+    "date_added": 10,
+    "year_added": 10,
+    "month_added": 10,
+    "duration_min": 2410,
+    "seasons": 5377
+  }
+}

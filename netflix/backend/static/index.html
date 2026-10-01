@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Netflix Analytics Dashboard</title>
+<link rel="stylesheet" href="style.css"></head><body>
+<header>
+  <div class="logo">NETFLIX</div>
+  <h1>NETFLIX DASHBOARD<small id="status"><i></i>connecting…</small></h1>
+  <div class="f"><label for="q">Title</label><input id="q" placeholder="Search a title" autocomplete="off"></div>
+  <div class="f"><label for="g">Genres</label><select id="g"></select></div>
+  <div class="f"><label for="y">Release year</label><select id="y"></select></div>
+  <button id="reset" title="Clear filters">Reset</button>
+</header>
+<main class="grid">
+  <section class="kpis">
+    <div class="card"><b>Avg Runtime (min)</b><span id="k1">–</span></div>
+    <div class="card"><b>Movies</b><span id="k2">–</span></div>
+    <div class="card"><b>TV Shows</b><span id="k3">–</span></div>
+    <div class="card"><b>Countries</b><span id="k4">–</span></div>
+  </section>
+  <section class="panel"><h2>Movies and TV Shows</h2><div id="donut"></div></section>
+  <section class="panel"><h2>Titles by Country</h2><div id="map"></div></section>
+  <section class="panel"><h2>Top 5 Genres</h2><div class="lg"><span><i class="r"></i>Movies</span><span><i class="w"></i>TV Shows</span></div><div id="genres"></div></section>
+  <section class="panel"><h2>Content By Year (2010 onwards)</h2><div class="lg"><span><i class="r"></i>Movies</span><span><i class="w"></i>TV Shows</span></div><div id="years"></div></section>
+  <section class="panel wide"><h2>Browse Titles <small id="count"></small></h2>
+    <div class="tw"><table><thead><tr><th>Title</th><th>Type</th><th>Year</th><th>Rating</th><th>Country</th><th>Genre</th></tr></thead><tbody id="rows"></tbody></table></div>
+    <div class="pager"><button id="prev">‹ Prev</button><span id="pg"></span><button id="next">Next ›</button></div>
+  </section>
+</main>
+<div id="tip"></div>
+<script src="app.js"></script></body></html>
